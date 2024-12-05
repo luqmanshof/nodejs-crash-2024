@@ -1,70 +1,70 @@
-name: Deploy to EC2
+# name: Deploy to EC2
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 20
+#       - name: Set up Node.js
+#         uses: actions/setup-node@v2
+#         with:
+#           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+#       - name: Install dependencies
+#         run: npm install
 
-      - name: Check SSH connection
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            echo "SSH connection successful"
-            whoami
-            # ls -la /var/www/backend
+#       - name: Check SSH connection
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_PRIVATE_KEY }}
+#           script: |
+#             echo "SSH connection successful"
+#             whoami
+#             # ls -la /var/www/backend
 
-      - name: Create target directory
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            sudo mkdir -p /var/www/backend/stashwise-api
-            sudo chown -R ${{ secrets.EC2_USERNAME }}:${{ secrets.EC2_USERNAME }} /var/www/backend/stashwise-api
+#       - name: Create target directory
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_PRIVATE_KEY }}
+#           script: |
+#             sudo mkdir -p /var/www/backend/stashwise-api
+#             sudo chown -R ${{ secrets.EC2_USERNAME }}:${{ secrets.EC2_USERNAME }} /var/www/backend/stashwise-api
 
-      - name: Deploy to EC2
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: ".,!.git,!node_modules"
-          target: /var/www/backend/stashwise-api
-          strip_components: 1
-          overwrite: true
+#       - name: Deploy to EC2
+#         uses: appleboy/scp-action@master
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_PRIVATE_KEY }}
+#           source: ".,!.git,!node_modules"
+#           target: /var/www/backend/stashwise-api
+#           strip_components: 1
+#           overwrite: true
 
-      - name: Setup and run application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            export NVM_DIR="/home/${{ secrets.EC2_USERNAME }}/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
-            export PATH="$NVM_DIR/versions/node/v20.11.1/bin:$PATH"
-            cd /var/www/backend/stashwise-api
-            npm install
-            pm2 delete myapp-backend || true
-            pm2 start src/index.js --name myapp-backend
+#       - name: Setup and run application
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USERNAME }}
+#           key: ${{ secrets.EC2_PRIVATE_KEY }}
+#           script: |
+#             export NVM_DIR="/home/${{ secrets.EC2_USERNAME }}/.nvm"
+#             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+#             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+#             export PATH="$NVM_DIR/versions/node/v20.11.1/bin:$PATH"
+#             cd /var/www/backend/stashwise-api
+#             npm install
+#             pm2 delete myapp-backend || true
+#             pm2 start src/index.js --name myapp-backend
