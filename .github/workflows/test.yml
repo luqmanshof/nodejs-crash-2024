@@ -67,4 +67,4 @@ jobs:
             cd /var/www/backend/User-backend-api
             npm install
             pm2 delete quikout-backend || true
-            pm2 start src/index.js --name quikout-backend
+            pm2 start server.js --name quikout-backend
